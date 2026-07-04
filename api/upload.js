@@ -1,9 +1,11 @@
-import { IncomingForm } from 'formidable';
-import { readFileSync } from 'fs';
 import { setCorsHeaders, requireAdmin, safeError } from './_auth.js';
 
 export const config = {
-  api: { bodyParser: false }
+  api: {
+    bodyParser: {
+      sizeLimit: '10mb'
+    }
+  }
 };
 
 export default async function handler(req, res) {
@@ -12,13 +14,6 @@ export default async function handler(req, res) {
 
   if (req.method !== 'POST') {
     return res.status(405).json({ success: false, error: 'Method not allowed' });
-  }
-
-  const contentLength = parseInt(req.headers['content-length'] || '0');
-  const MAX_SIZE = 13 * 1024 * 1024;
-
-  if (contentLength > MAX_SIZE) {
-    return res.status(400).json({ success: false, error: 'حجم الملف كبير جداً (الحد الأقصى 13 ميجابايت)' });
   }
 
   if (!requireAdmin(req)) {
@@ -31,78 +26,47 @@ export default async function handler(req, res) {
     const apiSecret = process.env.CLOUDINARY_API_SECRET;
 
     if (!cloudName || !apiKey || !apiSecret) {
-      return res.status(500).json({ success: false, error: 'Cloudinary env vars not configured.' });
+      console.error('[upload] Missing Cloudinary vars:', {
+        cloudName: !!cloudName,
+        apiKey: !!apiKey,
+        apiSecret: !!apiSecret
+      });
+      return res.status(500).json({
+        success: false,
+        error: 'Cloudinary غير مضبوط - تأكد من إضافة CLOUDINARY_CLOUD_NAME و CLOUDINARY_API_KEY و CLOUDINARY_API_SECRET في Vercel'
+      });
     }
 
-    const contentType = req.headers['content-type'] || '';
-    let base64Data;
+    const { data, fileName } = req.body || {};
 
-    if (contentType.includes('multipart/form-data')) {
-      const form = new IncomingForm({
-        maxFileSize: 10 * 1024 * 1024,
-        keepExtensions: true,
-        multiples: false
-      });
-
-      const { files } = await new Promise((resolve, reject) => {
-        form.parse(req, (err, fields, files) => {
-          if (err) reject(err);
-          else resolve({ fields, files });
-        });
-      });
-
-      let file = null;
-      if (files.file) {
-        file = Array.isArray(files.file) ? files.file[0] : files.file;
-      } else {
-        const keys = Object.keys(files);
-        if (keys.length > 0) {
-          file = Array.isArray(files[keys[0]]) ? files[keys[0]][0] : files[keys[0]];
-        }
-      }
-
-      if (!file) {
-        return res.status(400).json({ success: false, error: 'No file provided.' });
-      }
-
-      const fileBuffer = readFileSync(file.filepath || file.path);
-      const mimeType = file.mimetype || file.type || 'image/jpeg';
-      base64Data = `data:${mimeType};base64,${fileBuffer.toString('base64')}`;
-
-    } else {
-      let rawBody = '';
-      await new Promise((resolve, reject) => {
-        req.on('data', chunk => rawBody += chunk);
-        req.on('end', resolve);
-        req.on('error', reject);
-      });
-
-      let parsedBody;
-      try {
-        parsedBody = JSON.parse(rawBody);
-      } catch {
-        return res.status(400).json({ success: false, error: 'بيانات غير صالحة - تأكد من إرسال JSON صحيح' });
-      }
-
-      base64Data = parsedBody.data;
-    }
-
-    if (!base64Data) {
+    if (!data) {
       return res.status(400).json({ success: false, error: 'No image data provided.' });
     }
 
+    if (typeof data !== 'string' || !data.startsWith('data:')) {
+      return res.status(400).json({ success: false, error: 'بيانات الصورة غير صالحة' });
+    }
+
     const timestamp = Math.round(Date.now() / 1000);
-    const folder = 'monsters-store';
+    const folder = 'vento-store';
 
     const { createHash } = await import('crypto');
-    const sig = createHash('sha1').update(`folder=${folder}&timestamp=${timestamp}${apiSecret}`).digest('hex');
+    const sig = createHash('sha1')
+      .update(`folder=${folder}&timestamp=${timestamp}${apiSecret}`)
+      .digest('hex');
 
     const formData = new URLSearchParams();
-    formData.append('file', base64Data);
+    formData.append('file', data);
     formData.append('api_key', apiKey);
     formData.append('timestamp', timestamp.toString());
     formData.append('folder', folder);
     formData.append('signature', sig);
+
+    console.log('[upload] Uploading to Cloudinary...', {
+      folder,
+      cloudName,
+      fileNameHint: fileName || 'unknown'
+    });
 
     const cloudinaryRes = await fetch(
       `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
@@ -112,8 +76,11 @@ export default async function handler(req, res) {
     const cloudinaryData = await cloudinaryRes.json();
 
     if (!cloudinaryRes.ok || cloudinaryData.error) {
+      console.error('[upload] Cloudinary error:', cloudinaryData.error || cloudinaryData);
       throw new Error(cloudinaryData.error?.message || 'Cloudinary upload failed');
     }
+
+    console.log('[upload] ✅ Success:', cloudinaryData.secure_url);
 
     return res.status(200).json({
       success: true,
@@ -122,7 +89,7 @@ export default async function handler(req, res) {
     });
 
   } catch (err) {
-    console.error('[API /upload]', err);
+    console.error('[API /upload] Error:', err.message || err);
     return res.status(500).json({ success: false, error: safeError(err) });
   }
 }
