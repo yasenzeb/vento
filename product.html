@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Vento - تفاصيل المنتج</title>
+<link rel="icon" href="logo.jpeg" type="image/jpeg">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;700;900&display=swap" rel="stylesheet"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    darkMode: 'class',
+    theme: {
+      extend: {
+        fontFamily: { cairo: ['Cairo', 'sans-serif'] },
+      }
+    }
+  }
+</script>
+<script>
+  // Restore theme immediately before render
+  if (localStorage.getItem('vento_theme') === 'dark') {
+    document.documentElement.classList.add('dark');
+  } else {
+    document.documentElement.classList.remove('dark');
+  }
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+<style>
+* { font-family:'Cairo',sans-serif; }
+::-webkit-scrollbar{width:6px} ::-webkit-scrollbar-thumb{background:#22d3ee;border-radius:3px}
+.thumb-active { border-color: #22d3ee !important; }
+.main-img-wrap { transition: opacity .2s; }
+.thumb-img { transition: all .2s; cursor: pointer; }
+.thumb-img:hover { transform: scale(1.05); }
+</style>
+</head>
+<body class="bg-white text-black dark:bg-gray-950 dark:text-gray-100" x-data="productPage()" x-init="init()">
+
+<!-- NAVBAR -->
+<nav class="bg-white dark:bg-gray-950 border-b border-gray-100 dark:border-gray-800 sticky top-0 z-50 shadow-sm">
+  <div class="max-w-7xl mx-auto px-4 flex items-center justify-between h-14 md:h-16">
+    <a href="index.html" class="flex items-center">
+      <div class="bg-black dark:bg-white rounded-lg px-2 py-1 md:px-3 flex items-center gap-2">
+        <img src="logo.jpeg" alt="Vento" class="w-6 h-6 md:w-8 md:h-8 rounded-full">
+        <span class="text-white dark:text-black font-black text-base md:text-lg tracking-widest">VENTO</span>
+      </div>
+    </a>
+    <div class="flex items-center gap-4">
+      <a href="index.html" class="text-sm font-bold text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white"><i class="fas fa-home ml-1"></i>الرئيسية</a>
+      <a href="cart.html" class="relative p-2">
+        <i class="fas fa-shopping-cart text-xl text-gray-700 dark:text-gray-200 hover:text-black dark:hover:text-white transition"></i>
+        <span x-show="cartCount>0" x-text="cartCount" class="absolute -top-1 -left-1 bg-black dark:bg-white text-white dark:text-black text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-bold"></span>
+      </a>
+    </div>
+  </div>
+</nav>
+
+<!-- BREADCRUMB -->
+<div class="max-w-7xl mx-auto px-4 py-4 text-sm text-gray-400 dark:text-gray-500">
+  <a href="index.html" class="hover:text-gray-800 dark:hover:text-gray-300">الرئيسية</a>
+  <span class="mx-2">/</span>
+  <span class="text-black dark:text-gray-100 font-bold" x-text="product.name || 'المنتج'"></span>
+</div>
+
+<!-- PRODUCT DETAIL -->
+<section class="max-w-7xl mx-auto px-4 pb-16">
+  <template x-if="product.id">
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-10 items-start">
+
+    <!-- IMAGE GALLERY -->
+    <div>
+      <div class="relative rounded-3xl overflow-hidden bg-gray-50 dark:bg-gray-900 border border-gray-100 dark:border-gray-800 mb-3 main-img-wrap" style="min-height:350px">
+        <img :src="activeImage" :alt="product.name" class="w-full object-cover" style="min-height:350px;max-height:480px;object-fit:contain"/>
+      </div>
+      <!-- Thumbnails -->
+      <div x-show="allImages.length > 1" class="flex gap-2 flex-wrap">
+        <template x-for="(img, idx) in allImages" :key="idx">
+          <div @click="activeImage=img"
+               :class="activeImage===img ? 'thumb-active border-2' : 'border border-gray-200 dark:border-gray-800'"
+               class="thumb-img w-16 h-16 md:w-20 md:h-20 rounded-xl overflow-hidden bg-gray-50 dark:bg-gray-900 flex-shrink-0">
+            <img :src="img" :alt="'صورة '+(idx+1)" class="w-full h-full object-cover"/>
+          </div>
+        </template>
+      </div>
+    </div>
+
+    <!-- Info -->
+    <div>
+      <h1 class="text-3xl font-black mb-4 text-gray-900 dark:text-gray-100" x-text="product.name"></h1>
+      <p class="text-gray-600 dark:text-gray-300 mb-6" x-text="product.description"></p>
+
+      <!-- Price -->
+      <div class="flex items-center gap-4 mb-6">
+        <span class="text-4xl font-black text-black dark:text-white" x-text="calcPrice() + ' EGP'"></span>
+      </div>
+
+      <!-- Size -->
+      <div class="mb-6" x-show="sizes.length > 0">
+        <p class="font-black mb-3 text-gray-900 dark:text-gray-100">المقاس:</p>
+        <div class="flex gap-2 flex-wrap">
+          <template x-for="s in sizes">
+            <button @click="selectedSize=s; sizeError=false"
+              :class="selectedSize===s ? 'bg-black text-white border-black dark:bg-white dark:text-black dark:border-white' : 'bg-white text-black border-gray-300 dark:bg-gray-900 dark:text-gray-350 dark:border-gray-700'"
+              class="w-12 h-12 rounded-xl border-2 font-bold hover:border-black dark:hover:border-white transition text-sm" x-text="s"></button>
+          </template>
+        </div>
+        <p x-show="sizeError" class="text-red-500 text-sm mt-2 font-bold">⚠️ يجب اختيار المقاس أولاً</p>
+      </div>
+
+      <!-- Qty -->
+      <div class="mb-6">
+        <p class="font-black mb-3 text-gray-900 dark:text-gray-100">الكمية:</p>
+        <div class="flex items-center gap-3">
+          <button @click="qty=Math.max(1,qty-1)" class="w-10 h-10 bg-gray-100 dark:bg-gray-800 rounded-xl font-black text-xl hover:bg-gray-200 dark:hover:bg-gray-700 transition">−</button>
+          <span class="w-10 text-center font-black text-lg text-gray-900 dark:text-gray-100" x-text="qty"></span>
+          <button @click="qty++" class="w-10 h-10 bg-gray-100 dark:bg-gray-800 rounded-xl font-black text-xl hover:bg-gray-200 dark:hover:bg-gray-700 transition">+</button>
+        </div>
+      </div>
+
+      <!-- Total -->
+      <div class="bg-gray-50 dark:bg-gray-900 rounded-2xl p-4 mb-6 border dark:border-gray-800">
+        <div class="flex justify-between items-center">
+          <span class="text-gray-600 dark:text-gray-350 font-bold">الإجمالي:</span>
+          <span class="text-2xl font-black text-black dark:text-white" x-text="(calcPrice()*qty) + ' EGP'"></span>
+        </div>
+      </div>
+
+      <!-- Buttons -->
+      <div class="flex gap-3 flex-wrap">
+        <button @click="addToCart()"
+          class="flex-1 bg-gray-900 dark:bg-cyan-600 hover:bg-black dark:hover:bg-cyan-500 text-white font-black py-4 rounded-2xl transition text-lg flex items-center justify-center gap-2">
+          <i class="fas fa-cart-plus"></i> أضف للسلة
+        </button>
+        <button @click="buyNow()"
+          class="flex-1 bg-black dark:bg-white text-white dark:text-black font-black py-4 rounded-2xl hover:opacity-90 transition text-lg flex items-center justify-center gap-2">
+          <i class="fas fa-bolt"></i> اشتري الآن
+        </button>
+      </div>
+
+      <!-- Trust badges -->
+      <div class="flex gap-4 mt-6 text-xs text-gray-500 dark:text-gray-400 flex-wrap">
+        <span><i class="fas fa-truck text-gray-800 dark:text-gray-200 ml-1"></i>شحن سريع</span>
+        <span><i class="fas fa-shield-alt text-gray-800 dark:text-gray-200 ml-1"></i>جودة ممتازة</span>
+        <span><i class="fas fa-undo text-gray-800 dark:text-gray-200 ml-1"></i>استبدال مرن</span>
+      </div>
+    </div>
+  </div>
+  </template>
+
+  <template x-if="!product.id">
+    <div class="text-center py-24 text-gray-400">
+      <i class="fas fa-box-open text-6xl mb-4 block text-gray-200 dark:text-gray-700"></i>
+      <p class="text-xl font-bold">المنتج غير موجود</p>
+      <a href="index.html" class="mt-4 inline-block bg-black dark:bg-white text-white dark:text-black px-6 py-3 rounded-full font-bold hover:opacity-90 transition">العودة للمتجر</a>
+    </div>
+  </template>
+</section>
+
+<!-- TOAST -->
+<div x-show="toast" x-transition class="fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-black dark:bg-white text-white dark:text-black font-black px-6 py-3 rounded-full shadow-xl z-50 text-sm">
+  ✅ تمت الإضافة للسلة!
+</div>
+
+<script>
+function productPage() {
+  return {
+    product: {},
+    qty: 1,
+    selectedSize: '',
+    sizeError: false,
+    toast: false,
+    cartCount: 0,
+    sizes: [],
+    activeImage: '',
+    allImages: [],
+
+    init() {
+      try { this.product = JSON.parse(localStorage.getItem('vento_product') || '{}'); } catch {}
+
+      if (Array.isArray(this.product.sizes) && this.product.sizes.length) {
+        this.sizes = this.product.sizes;
+      }
+
+      const gallery = Array.isArray(this.product.gallery) ? this.product.gallery.filter(Boolean) : [];
+      const mainImg = this.product.image_url || null;
+
+      const seen = new Set();
+      const imgs = [];
+      if (mainImg) { imgs.push(mainImg); seen.add(mainImg); }
+      gallery.forEach(u => { if (u && !seen.has(u)) { imgs.push(u); seen.add(u); } });
+
+      this.allImages = imgs;
+      this.activeImage = imgs[0] || 'logo.jpeg';
+
+      this.cartCount = this.getCart().length;
+    },
+
+    calcPrice() {
+      const p = this.product;
+      if (!p.discount_value) return p.price;
+      if (p.discount_type === 'percent') return Math.round(p.price*(1-p.discount_value/100));
+      return Math.max(0, p.price - p.discount_value);
+    },
+
+    getCart() {
+      try { return JSON.parse(localStorage.getItem('vento_cart')||'[]'); } catch { return []; }
+    },
+
+    addToCart() {
+      this.sizeError = this.sizes.length > 0 && !this.selectedSize;
+      if (this.sizeError) return false;
+
+      const cart = this.getCart();
+      const key = this.product.id+'_'+this.selectedSize;
+      const idx = cart.findIndex(i=>i._key===key);
+      const item = {...this.product, qty:this.qty, size:this.selectedSize, _key:key, finalPrice:this.calcPrice()};
+      
+      if(idx>-1) cart[idx].qty += this.qty;
+      else cart.push(item);
+      
+      localStorage.setItem('vento_cart', JSON.stringify(cart));
+      this.cartCount = cart.length; 
+      this.toast=true; setTimeout(()=>this.toast=false,2500);
+      return true;
+    },
+
+    buyNow() {
+      const success = this.addToCart();
+      if(success) window.location.href='cart.html';
+    }
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Vento - الدفع</title>
+<link rel="icon" href="logo.jpeg" type="image/jpeg">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;700;900&display=swap" rel="stylesheet"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    darkMode: 'class',
+    theme: {
+      extend: {
+        fontFamily: { cairo: ['Cairo', 'sans-serif'] },
+      }
+    }
+  }
+</script>
+<script>
+  // Restore theme immediately before render
+  if (localStorage.getItem('vento_theme') === 'dark') {
+    document.documentElement.classList.add('dark');
+  } else {
+    document.documentElement.classList.remove('dark');
+  }
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+<style>
+* { font-family:'Cairo',sans-serif; }
+::-webkit-scrollbar{width:6px} ::-webkit-scrollbar-thumb{background:#22d3ee;border-radius:3px}
+.form-input { w-full border-gray-200 rounded-xl px-4 py-3 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-black focus:border-black outline-none transition text-sm }
+</style>
+</head>
+<body class="bg-gray-50 text-black dark:bg-gray-950 dark:text-gray-100 min-h-screen" x-data="checkoutPage()" x-init="init()">
+
+<nav class="bg-white dark:bg-gray-950 border-b border-gray-100 dark:border-gray-800 shadow-sm sticky top-0 z-50">
+  <div class="max-w-7xl mx-auto px-4 flex items-center justify-between h-14 md:h-16">
+    <a href="index.html" class="flex items-center">
+      <div class="bg-black dark:bg-white rounded-lg px-2 py-1 md:px-3 flex items-center gap-2">
+        <img src="logo.jpeg" alt="Vento" class="w-6 h-6 md:w-8 md:h-8 rounded-full">
+        <span class="text-white dark:text-black font-black text-base md:text-lg tracking-widest">VENTO</span>
+      </div>
+    </a>
+    <div class="flex items-center gap-3">
+      <a href="cart.html" class="text-sm font-bold text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white"><i class="fas fa-shopping-cart ml-1"></i>العودة للسلة</a>
+    </div>
+  </div>
+</nav>
+
+<div class="max-w-6xl mx-auto px-4 py-8">
+  <div class="flex flex-col lg:flex-row gap-8 items-start">
+
+    <!-- Form Section -->
+    <div class="w-full lg:w-2/3 bg-white dark:bg-gray-900 p-6 md:p-8 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-800">
+      <h1 class="text-2xl font-black mb-6 flex items-center gap-2">
+        <i class="fas fa-truck text-gray-800 dark:text-gray-200"></i> بيانات التوصيل
+      </h1>
+      
+      <form @submit.prevent="submitOrder" class="space-y-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1">الاسم الأول <span class="text-red-500">*</span></label>
+            <input type="text" x-model="form.firstName" required class="w-full border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 bg-gray-50 dark:bg-gray-800 focus:bg-white dark:focus:bg-gray-900 focus:ring-2 focus:ring-black dark:focus:ring-white outline-none transition border text-gray-900 dark:text-gray-100">
+          </div>
+          <div>
+            <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1">الاسم الأخير <span class="text-red-500">*</span></label>
+            <input type="text" x-model="form.lastName" required class="w-full border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 bg-gray-50 dark:bg-gray-800 focus:bg-white dark:focus:bg-gray-900 focus:ring-2 focus:ring-black dark:focus:ring-white outline-none transition border text-gray-900 dark:text-gray-100">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1">رقم الموبايل <span class="text-red-500">*</span></label>
+          <input type="tel" x-model="form.phone" required class="w-full border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 bg-gray-50 dark:bg-gray-800 focus:bg-white dark:focus:bg-gray-900 focus:ring-2 focus:ring-black dark:focus:ring-white outline-none transition border text-gray-900 dark:text-gray-100" placeholder="01xxxxxxxxx">
+        </div>
+
+        <div>
+          <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1">البريد الإلكتروني <span class="text-red-500">*</span></label>
+          <input type="email" x-model="form.email" required class="w-full border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 bg-gray-50 dark:bg-gray-800 focus:bg-white dark:focus:bg-gray-900 focus:ring-2 focus:ring-black dark:focus:ring-white outline-none transition border text-gray-900 dark:text-gray-100" placeholder="example@domain.com">
+        </div>
+
+        <div>
+          <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1">المحافظة / المدينة <span class="text-red-500">*</span></label>
+          <select x-model="form.city" @change="updateShipping" required class="w-full border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 bg-gray-50 dark:bg-gray-800 focus:bg-white dark:focus:bg-gray-900 focus:ring-2 focus:ring-black dark:focus:ring-white outline-none transition border text-gray-900 dark:text-gray-100">
+            <option value="">اختر المحافظة</option>
+            <option value="cairo">القاهرة (شحن مجاني)</option>
+            <option value="giza">الجيزة (شحن مجاني)</option>
+            <option value="alex">الإسكندرية (شحن مجاني)</option>
+            <option value="qalyubia">القليوبية (شحن مجاني)</option>
+            <option value="dakahlia">الدقهلية (شحن مجاني)</option>
+            <option value="sharqia">الشرقية (شحن مجاني)</option>
+            <option value="monufia">المنوفية (شحن مجاني)</option>
+            <option value="gharbia">الغربية (شحن مجاني)</option>
+            <option value="beheira">البحيرة (شحن مجاني)</option>
+            <option value="damietta">دمياط (شحن مجاني)</option>
+            <option value="port_said">بورسعيد (شحن مجاني)</option>
+            <option value="ismailia">الإسماعيلية (شحن مجاني)</option>
+            <option value="suez">السويس (شحن مجاني)</option>
+            <option value="kafr_el_sheikh">كفر الشيخ (شحن مجاني)</option>
+            <option value="fayoum">الفيوم (شحن مجاني)</option>
+            <option value="beni_suef">بني سويف (شحن مجاني)</option>
+            <option value="minya">المنيا (شحن مجاني)</option>
+            <option value="asyut">أسيوط (شحن مجاني)</option>
+            <option value="sohag">سوهاج (شحن مجاني)</option>
+            <option value="qena">قنا (شحن مجاني)</option>
+            <option value="luxor">الأقصر (شحن مجاني)</option>
+            <option value="aswan">أسوان (شحن مجاني)</option>
+            <option value="red_sea">البحر الأحمر (شحن مجاني)</option>
+            <option value="new_valley">الوادي الجديد (شحن مجاني)</option>
+            <option value="matrouh">مطروح (شحن مجاني)</option>
+            <option value="north_sinai">شمال سيناء (شحن مجاني)</option>
+            <option value="south_sinai">جنوب سيناء (شحن مجاني)</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1">العنوان بالتفصيل <span class="text-red-500">*</span></label>
+          <input type="text" x-model="form.address" required class="w-full border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 bg-gray-50 dark:bg-gray-800 focus:bg-white dark:focus:bg-gray-900 focus:ring-2 focus:ring-black dark:focus:ring-white outline-none transition border text-gray-900 dark:text-gray-100" placeholder="اسم الشارع، رقم العمارة، الدور، الشقة">
+        </div>
+
+        <div>
+          <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1">ملاحظات إضافية (اختياري)</label>
+          <textarea x-model="form.notes" class="w-full border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 bg-gray-50 dark:bg-gray-800 focus:bg-white dark:focus:bg-gray-900 focus:ring-2 focus:ring-black dark:focus:ring-white outline-none transition border text-gray-900 dark:text-gray-100" rows="3" placeholder="أي تفاصيل إضافية للعنوان أو موعد الاستلام..."></textarea>
+        </div>
+
+        <!-- Payment Method (COD only) -->
+        <div class="pt-4">
+          <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">طريقة الدفع</label>
+          <div class="bg-gray-50 dark:bg-gray-850 border-2 border-black dark:border-cyan-400 rounded-xl p-4 flex items-center gap-3">
+            <i class="fas fa-money-bill-wave text-gray-800 dark:text-cyan-400 text-xl"></i>
+            <span class="font-bold">الدفع نقداً عند الاستلام (COD)</span>
+          </div>
+        </div>
+
+        <button type="submit" :disabled="isSubmitting" class="w-full bg-gray-900 dark:bg-white dark:text-black text-white font-black py-4 rounded-xl hover:opacity-90 transition shadow-lg text-lg mt-6 flex items-center justify-center gap-2 disabled:opacity-50">
+          <span x-show="!isSubmitting">تأكيد الطلب الآن</span>
+          <span x-show="isSubmitting"><i class="fas fa-spinner fa-spin"></i> جاري الإرسال...</span>
+        </button>
+      </form>
+    </div>
+
+    <!-- Summary Section -->
+    <div class="w-full lg:w-1/3">
+      <div class="bg-white dark:bg-gray-900 p-6 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-800 sticky top-20">
+        <h2 class="text-xl font-black mb-4 flex items-center gap-2">
+          <i class="fas fa-receipt text-gray-800 dark:text-gray-200"></i> ملخص الطلب
+        </h2>
+        
+        <div class="space-y-3 mb-4 max-h-64 overflow-y-auto pr-2">
+          <template x-for="item in cart" :key="item._key">
+            <div class="flex gap-3 items-center">
+              <img :src="item.image_url" class="w-12 h-12 rounded-lg object-cover bg-gray-100 dark:bg-gray-800">
+              <div class="flex-1">
+                <p class="text-xs font-bold line-clamp-1" x-text="item.name"></p>
+                <p class="text-xs text-gray-500 dark:text-gray-400" x-text="'المقاس: '+item.size"></p>
+              </div>
+              <div class="text-left">
+                <p class="text-xs font-bold" x-text="(item.finalPrice*item.qty)+' ج.م'"></p>
+                <p class="text-xs text-gray-500 dark:text-gray-400" x-text="'الكمية: '+item.qty"></p>
+              </div>
+            </div>
+          </template>
+        </div>
+
+        <div class="border-t border-gray-100 dark:border-gray-800 pt-4 space-y-2 text-sm font-bold">
+          <div class="flex justify-between text-gray-600 dark:text-gray-300">
+            <span>المجموع:</span>
+            <span x-text="subtotal + ' ج.م'"></span>
+          </div>
+          <div class="flex justify-between text-gray-600 dark:text-gray-300">
+            <span>مصاريف الشحن:</span>
+            <span class="text-green-600 dark:text-green-400">مجاني بالكامل</span>
+          </div>
+          <div class="flex justify-between text-lg font-black pt-2 border-t border-gray-100 dark:border-gray-800">
+            <span>الإجمالي:</span>
+            <span class="text-black dark:text-white" x-text="subtotal + ' ج.م'"></span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- SUCCESS MODAL -->
+<div x-show="showSuccess" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md" style="display:none;" x-transition>
+  <div class="bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 rounded-3xl p-8 max-w-md w-full text-center shadow-2xl border border-gray-100 dark:border-gray-800 transform transition-all">
+    <div class="w-20 h-20 bg-green-100 dark:bg-green-950 rounded-full flex items-center justify-center mx-auto mb-5 animate-pulse">
+      <i class="fas fa-check text-4xl text-green-500 dark:text-green-400"></i>
+    </div>
+    <h2 class="text-2xl font-black mb-3">تم تأكيد طلبك بنجاح! 🎉</h2>
+    <p class="text-gray-600 dark:text-gray-300 mb-4 font-semibold text-sm leading-relaxed">
+      لقد استلمنا طلبك برقم:
+      <br>
+      <span class="text-cyan-600 dark:text-cyan-400 font-extrabold text-lg select-all" x-text="orderNumber"></span>
+    </p>
+    <p class="text-xs text-gray-500 dark:text-gray-400 mb-6 leading-relaxed">
+      تم إرسال تفاصيل الفاتورة بالكامل إلى بريدك الإلكتروني.
+      <br>
+      سنتواصل معك قريباً على الهاتف لتأكيد الشحن.
+    </p>
+    
+    <div class="bg-gray-50 dark:bg-gray-800 rounded-2xl p-4 mb-6 text-right text-xs text-gray-600 dark:text-gray-350 space-y-1">
+      <p>🚚 <strong>الشحن مجاني بالكامل</strong> لجميع المحافظات.</p>
+      <p>💬 سنتواصل معك عبر الهاتف أو الواتساب خلال 24 ساعة لتأكيد موعد التسليم.</p>
+    </div>
+    
+    <a href="index.html" class="inline-block w-full bg-black dark:bg-white text-white dark:text-black font-black py-4 rounded-xl transition hover:opacity-90 shadow-md">
+      العودة للمتجر الرئيسي
+    </a>
+  </div>
+</div>
+
+<script>
+function checkoutPage() {
+  return {
+    cart: [],
+    subtotal: 0,
+    shippingCost: 0,
+    isSubmitting: false,
+    showSuccess: false,
+    orderNumber: '',
+    form: {
+      firstName: '',
+      lastName: '',
+      phone: '',
+      email: '',
+      city: '',
+      address: '',
+      notes: ''
+    },
+    
+    init() {
+      try { this.cart = JSON.parse(localStorage.getItem('vento_cart')||'[]'); } catch { this.cart=[]; }
+      if(this.cart.length === 0) {
+        window.location.href = 'index.html';
+        return;
+      }
+      this.subtotal = this.cart.reduce((acc, item) => acc + (item.finalPrice * item.qty), 0);
+      this.shippingCost = 0; // Free shipping for all governorates
+    },
+
+    updateShipping() {
+      this.shippingCost = 0; // Always free shipping
+    },
+
+    async submitOrder() {
+      this.isSubmitting = true;
+
+      // Validate email format
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(this.form.email)) {
+          alert("يرجى إدخال بريد إلكتروني صحيح");
+          this.isSubmitting = false;
+          return;
+      }
+
+      try {
+          // 1. Save order in database
+          let orderNumber = "ORD-" + new Date().toISOString().replace(/[-T:.Z]/g, "").slice(0, 14) + "-" + Math.floor(1000 + Math.random() * 9000);
+          try {
+              const checkResponse = await fetch('/api/checkout', {
+                  method: 'POST',
+                  headers: {
+                      'Content-Type': 'application/json'
+                  },
+                  body: JSON.stringify({
+                      firstName: this.form.firstName,
+                      lastName: this.form.lastName,
+                      phone: this.form.phone,
+                      email: this.form.email,
+                      city: this.form.city,
+                      address: this.form.address,
+                      notes: this.form.notes,
+                      total: this.subtotal,
+                      shippingCost: 0,
+                      items: this.cart
+                  })
+              });
+
+              if (checkResponse.ok) {
+                  const checkData = await checkResponse.json();
+                  if (checkData.success && checkData.order_number) {
+                      orderNumber = checkData.order_number;
+                  } else {
+                      throw new Error(checkData.error || "Failed to create order");
+                  }
+              } else {
+                  const errText = await checkResponse.text();
+                  throw new Error(errText || "Checkout failed");
+              }
+          } catch (dbErr) {
+              console.error("Database order saving failed:", dbErr);
+              throw dbErr;
+          }
+
+          // 2. Call send_invoice endpoint to send email
+          const invoicePayload = {
+              customer_name: this.form.firstName + ' ' + this.form.lastName,
+              email: this.form.email,
+              phone: this.form.phone,
+              address: this.form.address,
+              city: this.form.city,
+              notes: this.form.notes,
+              products: this.cart.map(item => item.name),
+              sizes: this.cart.map(item => item.size || 'N/A'),
+              colors: this.cart.map(item => item.color || 'N/A'),
+              quantities: this.cart.map(item => item.qty),
+              images: this.cart.map(item => item.image_url || ''),
+              prices: this.cart.map(item => item.finalPrice),
+              shipping_cost: 0,
+              total: this.subtotal,
+              order_number: orderNumber
+          };
+
+          const response = await fetch('/api/send_invoice', {
+              method: 'POST',
+              headers: {
+                  'Content-Type': 'application/json'
+              },
+              body: JSON.stringify(invoicePayload)
+          });
+
+          if (!response.ok) {
+              throw new Error("Email service error (" + response.status + ")");
+          }
+
+          const data = await response.json();
+          if (data.success !== true) {
+              throw new Error(data.error || "Failed to send invoice email.");
+          }
+
+          // 3. Clear cart and show success modal
+          this.orderNumber = orderNumber;
+          this.showSuccess = true;
+          localStorage.removeItem("vento_cart");
+          this.cart = [];
+
+      } catch (err) {
+          console.error(err);
+          alert(
+              err.message ||
+              "حدث خطأ أثناء إتمام الطلب. يرجى المحاولة مرة أخرى."
+          );
+          this.showSuccess = false;
+      } finally {
+          this.isSubmitting = false;
+      }
+    }
+  }}
+</script>
+</body>
+</html>

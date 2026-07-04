@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+<title>Vento - Built for Performance</title>
+<meta name="description" content="متجر Vento - ملابس رياضية بأعلى جودة وتصميم يمنحك الثقة.">
+<link rel="icon" href="logo.jpeg" type="image/jpeg">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    darkMode: 'class',
+    theme: {
+      extend: {
+        fontFamily: { cairo: ['Cairo', 'sans-serif'] },
+      }
+    }
+  }
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+<style>
+  * { font-family: 'Cairo', sans-serif; box-sizing: border-box; }
+  html, body { overflow-x: hidden; width: 100%; scroll-behavior: smooth; }
+  
+  /* Card hover */
+  .card-hover { transition: transform .3s cubic-bezier(.4,0,.2,1), box-shadow .3s; }
+  @media(hover:hover){ .card-hover:hover { transform: translateY(-6px); box-shadow: 0 16px 40px rgba(0,0,0,.15); } }
+  
+  /* Skeleton loader */
+  .skeleton { background: linear-gradient(90deg,#f0f0f0 25%,#e0e0e0 50%,#f0f0f0 75%); background-size:200% 100%; animation: shimmer 1.5s infinite; }
+  @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+  
+  /* Marquee */
+  .marquee-wrap { overflow:hidden; }
+  .marquee-inner { display:inline-flex; animation: marquee 22s linear infinite; white-space:nowrap; }
+  @keyframes marquee { 0%{transform:translateX(0)} 100%{transform:translateX(-50%)} }
+  
+  /* Scrollbar */
+  ::-webkit-scrollbar{width:4px}
+  ::-webkit-scrollbar-thumb{background:#555;border-radius:2px}
+  .dark ::-webkit-scrollbar-thumb{background:#888;}
+  
+  /* Line clamp */
+  .line-clamp-2 { display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+  
+  /* Nav link */
+  .nav-link { transition: color .2s, transform .2s; position: relative; }
+  .nav-link::after { content:''; position:absolute; bottom:-2px; right:0; width:0; height:2px; background:#000; transition: width .3s; }
+  .nav-link:hover::after { width:100%; }
+  .dark .nav-link::after { background:#fff; }
+  
+  /* Image hover flip */
+  .product-img-container { position: relative; overflow: hidden; }
+  .product-img-front, .product-img-back { transition: opacity .5s ease, transform .5s ease; position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .product-img-front { z-index: 2; opacity: 1; }
+  .product-img-back { z-index: 1; opacity: 0; transform: scale(1.05); }
+  .product-img-container:hover .product-img-front { opacity: 0; transform: scale(1.05); }
+  .product-img-container:hover .product-img-back { opacity: 1; transform: scale(1); }
+  
+  /* Pulse animation */
+  @keyframes pulse-subtle { 0%,100%{opacity:1} 50%{opacity:.7} }
+  .pulse-subtle { animation: pulse-subtle 2s ease-in-out infinite; }
+  
+  /* Fade in animation */
+  @keyframes fadeInUp { from { opacity:0; transform: translateY(20px); } to { opacity:1; transform: translateY(0); } }
+  .fade-in-up { animation: fadeInUp .6s ease forwards; }
+  
+  /* Product grid mobile */
+  @media(max-width:640px){
+    .product-grid { grid-template-columns: repeat(2, minmax(0,1fr)) !important; gap: 10px !important; }
+  }
+  
+  /* Dark mode transitions */
+  body, nav, section, footer, div, a, span, p, h1, h2, h3, button, input, select, textarea {
+    transition: background-color .3s, color .3s, border-color .3s;
+  }
+  
+  /* Toggle switch */
+  .toggle-switch { width:44px; height:24px; border-radius:12px; position:relative; cursor:pointer; transition: background .3s; }
+  .toggle-switch::after { content:''; position:absolute; width:18px; height:18px; border-radius:50%; top:3px; left:3px; background:#fff; transition: transform .3s; box-shadow: 0 1px 3px rgba(0,0,0,.2); }
+  .toggle-switch.active::after { transform: translateX(20px); }
+</style>
+</head>
+<body class="bg-white text-gray-900 dark:bg-gray-950 dark:text-gray-100" x-data="store()" x-init="init()">
+
+<!-- TOP BAR -->
+<div class="bg-black dark:bg-white text-white dark:text-black text-xs py-2 marquee-wrap">
+  <div class="marquee-inner">
+    <span class="px-4">🚚 <span x-text="t('topbar_shipping')"></span></span>
+    <span class="px-4 text-gray-500 dark:text-gray-400">|</span>
+    <span class="px-4">🔥 <span x-text="t('topbar_quality')"></span></span>
+    <span class="px-4 text-gray-500 dark:text-gray-400">|</span>
+    <span class="px-4">✅ <span x-text="t('topbar_guarantee')"></span></span>
+    <span class="px-4 text-gray-500 dark:text-gray-400">|</span>
+    <span class="px-4">📞 <span x-text="t('topbar_support')"></span></span>
+    <span class="px-4 text-gray-500 dark:text-gray-400">|</span>
+    <span class="px-4">🚚 <span x-text="t('topbar_shipping')"></span></span>
+    <span class="px-4 text-gray-500 dark:text-gray-400">|</span>
+    <span class="px-4">✅ <span x-text="t('topbar_guarantee')"></span></span>
+    <span class="px-4 text-gray-500 dark:text-gray-400">|</span>
+    <span class="px-4">📞 <span x-text="t('topbar_support')"></span></span>
+    <span class="px-4 text-gray-500 dark:text-gray-400">|</span>
+  </div>
+</div>
+
+<!-- NAVBAR -->
+<nav class="bg-white dark:bg-gray-950 border-b border-gray-100 dark:border-gray-800 sticky top-0 z-50 shadow-sm backdrop-blur-md bg-opacity-95 dark:bg-opacity-95">
+  <div class="max-w-7xl mx-auto px-4 flex items-center justify-between h-14 md:h-16">
+    <a href="index.html" class="flex items-center">
+      <div class="bg-black dark:bg-white rounded-xl px-3 py-1.5 flex items-center gap-2">
+        <img src="logo.jpeg" alt="Vento" class="w-7 h-7 rounded-full">
+        <span class="text-white dark:text-black font-black text-base md:text-lg tracking-widest">VENTO</span>
+      </div>
+    </a>
+    <div class="hidden md:flex items-center gap-6 text-sm font-bold">
+      <a href="index.html" class="nav-link text-gray-900 dark:text-white" x-text="t('nav_home')"></a>
+      <a href="#products" class="nav-link text-gray-600 dark:text-gray-300" x-text="t('nav_products')"></a>
+      <a href="#about" class="nav-link text-gray-600 dark:text-gray-300" x-text="t('nav_about')"></a>
+    </div>
+    <div class="flex items-center gap-2 md:gap-3">
+      <!-- Language Toggle -->
+      <button @click="toggleLang()" class="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-bold border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 transition" :title="lang==='ar'?'Switch to English':'التبديل للعربية'">
+        <span x-text="lang==='ar'?'EN':'عربي'" class="text-xs font-black"></span>
+        <i class="fas fa-globe text-xs"></i>
+      </button>
+      
+      <!-- Theme Toggle -->
+      <button @click="toggleTheme()" class="p-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition" :title="isDark?'Light Mode':'Dark Mode'">
+        <i :class="isDark ? 'fas fa-sun text-yellow-400' : 'fas fa-moon'" class="text-base"></i>
+      </button>
+      
+      <!-- Cart -->
+      <a href="cart.html" class="relative p-2">
+        <i class="fas fa-shopping-bag text-lg text-gray-700 dark:text-gray-200 hover:text-black dark:hover:text-white transition"></i>
+        <span x-show="cartCount>0" x-text="cartCount"
+          class="absolute -top-0.5 -left-0.5 bg-black dark:bg-white text-white dark:text-black text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-black leading-none"></span>
+      </a>
+      
+      <!-- Mobile menu toggle -->
+      <button @click="mobileMenu=!mobileMenu" class="md:hidden p-2 text-gray-700 dark:text-gray-200">
+        <i :class="mobileMenu ? 'fa-times' : 'fa-bars'" class="fas text-xl"></i>
+      </button>
+    </div>
+  </div>
+  <!-- Mobile Menu -->
+  <div x-show="mobileMenu" x-transition:enter="transition ease-out duration-200"
+    x-transition:enter-start="opacity-0 -translate-y-2" x-transition:enter-end="opacity-100 translate-y-0"
+    class="md:hidden bg-white dark:bg-gray-950 border-t dark:border-gray-800 px-5 py-4 flex flex-col gap-4 text-sm font-bold shadow-lg" style="display:none;">
+    <a href="index.html" class="text-gray-800 dark:text-gray-100 flex items-center gap-2"><i class="fas fa-home w-5"></i><span x-text="t('nav_home')"></span></a>
+    <a href="#products" @click="mobileMenu=false" class="text-gray-600 dark:text-gray-300 flex items-center gap-2"><i class="fas fa-box w-5"></i><span x-text="t('nav_products')"></span></a>
+    <a href="#about" @click="mobileMenu=false" class="text-gray-600 dark:text-gray-300 flex items-center gap-2"><i class="fas fa-info-circle w-5"></i><span x-text="t('nav_about')"></span></a>
+    <a href="cart.html" class="bg-black dark:bg-white text-white dark:text-black font-black py-3 rounded-xl text-center flex items-center justify-center gap-2">
+      <i class="fas fa-shopping-bag"></i> <span x-text="t('nav_cart')"></span>
+      <span x-show="cartCount>0" class="bg-white dark:bg-black text-black dark:text-white text-xs w-5 h-5 rounded-full flex items-center justify-center" x-text="cartCount"></span>
+    </a>
+  </div>
+</nav>
+
+<!-- HERO BANNER -->
+<section class="bg-black dark:bg-gray-950 text-white dark:text-gray-100 relative overflow-hidden border-b dark:border-gray-800">
+  <div class="absolute inset-0 opacity-10">
+    <div class="absolute top-0 right-0 w-96 h-96 bg-white dark:bg-zinc-800 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3"></div>
+    <div class="absolute bottom-0 left-0 w-72 h-72 bg-gray-500 rounded-full blur-3xl translate-y-1/2 -translate-x-1/3"></div>
+  </div>
+  <div class="max-w-7xl mx-auto px-4 py-10 md:py-16 flex flex-col md:flex-row items-center gap-6 relative z-10">
+    <div class="flex-1 text-center md:text-right w-full">
+      <div class="inline-block bg-white/10 dark:bg-gray-800 backdrop-blur-sm rounded-full px-4 py-1.5 text-xs font-bold mb-4 border border-white/20 dark:border-gray-700">
+        ✨ <span x-text="t('hero_badge')"></span>
+      </div>
+      <h1 class="font-black leading-tight mb-4 text-4xl md:text-6xl tracking-tight">
+        VENTO<br><span class="text-gray-450 dark:text-cyan-450 text-xl md:text-3xl font-bold">Built for Performance</span>
+      </h1>
+      <p class="text-gray-300 dark:text-gray-400 text-sm md:text-base mb-8 max-w-lg" x-text="t('hero_desc')"></p>
+      <div class="flex gap-3 justify-center md:justify-start flex-wrap">
+        <a href="#products" class="bg-white dark:bg-cyan-400 hover:bg-gray-100 dark:hover:bg-cyan-300 text-black dark:text-black font-black px-8 py-3.5 rounded-full transition text-base shadow-lg hover:shadow-xl hover:-translate-y-0.5 transform">
+          <span x-text="t('hero_cta')"></span> <i class="fas fa-arrow-down mr-1 text-sm"></i>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES BAR -->
+<section class="bg-gray-50 dark:bg-gray-900 py-5 md:py-7 border-b border-gray-100 dark:border-gray-800">
+  <div class="max-w-7xl mx-auto px-4 grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 text-center">
+    <div class="flex flex-col items-center gap-1 md:gap-2 py-2">
+      <div class="w-10 h-10 md:w-12 md:h-12 bg-black dark:bg-white text-white dark:text-black rounded-xl flex items-center justify-center mb-1">
+        <i class="fas fa-truck text-lg"></i>
+      </div>
+      <span class="font-bold text-sm" x-text="t('feat_shipping')"></span>
+      <span class="text-gray-500 dark:text-gray-400 text-xs hidden md:block" x-text="t('feat_shipping_sub')"></span>
+    </div>
+    <div class="flex flex-col items-center gap-1 md:gap-2 py-2">
+      <div class="w-10 h-10 md:w-12 md:h-12 bg-black dark:bg-white text-white dark:text-black rounded-xl flex items-center justify-center mb-1">
+        <i class="fas fa-money-bill-wave text-lg"></i>
+      </div>
+      <span class="font-bold text-sm" x-text="t('feat_cod')"></span>
+      <span class="text-gray-500 dark:text-gray-400 text-xs hidden md:block" x-text="t('feat_cod_sub')"></span>
+    </div>
+    <div class="flex flex-col items-center gap-1 md:gap-2 py-2">
+      <div class="w-10 h-10 md:w-12 md:h-12 bg-black dark:bg-white text-white dark:text-black rounded-xl flex items-center justify-center mb-1">
+        <i class="fas fa-star text-lg"></i>
+      </div>
+      <span class="font-bold text-sm" x-text="t('feat_quality')"></span>
+      <span class="text-gray-500 dark:text-gray-400 text-xs hidden md:block" x-text="t('feat_quality_sub')"></span>
+    </div>
+    <div class="flex flex-col items-center gap-1 md:gap-2 py-2">
+      <div class="w-10 h-10 md:w-12 md:h-12 bg-black dark:bg-white text-white dark:text-black rounded-xl flex items-center justify-center mb-1">
+        <i class="fas fa-undo text-lg"></i>
+      </div>
+      <span class="font-bold text-sm" x-text="t('feat_return')"></span>
+      <span class="text-gray-500 dark:text-gray-400 text-xs hidden md:block" x-text="t('feat_return_sub')"></span>
+    </div>
+  </div>
+</section>
+
+<!-- PRODUCTS -->
+<section id="products" class="py-10 md:py-16 px-4 bg-white dark:bg-gray-950">
+  <div class="max-w-7xl mx-auto">
+    <div class="flex items-start md:items-center justify-between mb-8 flex-col md:flex-row gap-4">
+      <div>
+        <h2 class="text-2xl md:text-3xl font-black" x-text="t('products_title')"></h2>
+        <div class="w-12 h-1 bg-black dark:bg-white mt-2 rounded-full"></div>
+      </div>
+      
+      <!-- Filter tabs -->
+      <div class="flex gap-2 flex-wrap">
+        <template x-for="cat in categories" :key="cat.slug">
+          <button @click="activeFilter = cat.slug"
+            :class="activeFilter===cat.slug ? 'bg-black dark:bg-white text-white dark:text-black shadow-lg' : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'"
+            class="px-5 py-2 rounded-full text-xs font-bold transition-all duration-200"
+            x-text="cat.name">
+          </button>
+        </template>
+      </div>
+    </div>
+
+    <!-- Products Grid -->
+    <div class="product-grid grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-5">
+      <template x-for="(p, pIdx) in filteredProducts" :key="p.id">
+        <div class="card-hover bg-white dark:bg-gray-900 rounded-2xl overflow-hidden shadow-sm border border-gray-100 dark:border-gray-800 hover:border-gray-300 dark:hover:border-gray-600 cursor-pointer group transition-all duration-300"
+             :style="'animation-delay:'+(pIdx*80)+'ms'"
+             @click="goToProduct(p)">
+          <!-- Image with hover flip -->
+          <div class="product-img-container h-48 md:h-56 bg-gray-100 dark:bg-gray-800">
+            <img :src="p.image_url" :alt="p.name" class="product-img-front"/>
+            <template x-if="p.image_hover">
+              <img :src="p.image_hover" :alt="p.name + ' - back'" class="product-img-back"/>
+            </template>
+            <template x-if="isNew(p)">
+              <span class="absolute top-2 left-2 z-10 bg-black dark:bg-white text-white dark:text-black text-[10px] font-black px-2 py-0.5 rounded-full" x-text="t('badge_new')"></span>
+            </template>
+            <template x-if="hasDiscount(p)">
+              <span class="absolute top-2 right-2 z-10 bg-red-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full" x-text="discountBadge(p)"></span>
+            </template>
+          </div>
+          <div class="p-3 md:p-4">
+            <h3 class="font-bold text-xs md:text-sm leading-snug mb-2 line-clamp-2" x-text="p.name"></h3>
+            <div class="flex items-center gap-2 flex-wrap mb-3">
+              <span class="font-black text-black dark:text-white text-sm md:text-base" x-text="calcPrice(p) + ' EGP'"></span>
+              <template x-if="hasDiscount(p)">
+                <span class="text-gray-400 line-through text-xs" x-text="p.price + ' EGP'"></span>
+              </template>
+            </div>
+            <button @click.stop="goToProduct(p)"
+              class="w-full bg-black dark:bg-white text-white dark:text-black text-xs py-2.5 rounded-xl hover:bg-gray-800 dark:hover:bg-gray-100 transition font-bold flex items-center justify-center gap-1.5 active:scale-95 transform">
+              <i class="fas fa-eye text-xs"></i> <span x-text="t('btn_view')"></span>
+            </button>
+          </div>
+        </div>
+      </template>
+      <div x-show="filteredProducts.length===0" class="col-span-2 md:col-span-5 text-center py-16 text-gray-400">
+        <i class="fas fa-box-open text-5xl mb-4 block text-gray-200 dark:text-gray-700"></i>
+        <p class="font-bold" x-text="t('no_products')"></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section id="about" class="py-14 md:py-20 px-4 bg-gray-50 dark:bg-gray-900">
+  <div class="max-w-3xl mx-auto text-center">
+    <h2 class="text-2xl md:text-3xl font-black mb-4" x-text="t('about_title')"></h2>
+    <div class="w-12 h-1 bg-black dark:bg-white mx-auto mb-8 rounded-full"></div>
+    <p class="text-gray-600 dark:text-gray-300 leading-relaxed text-sm md:text-base" x-text="t('about_text')"></p>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="bg-black dark:bg-white text-white dark:text-black pt-12 pb-6 px-4">
+  <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-10 mb-10">
+    <div>
+      <div class="flex items-center gap-3 mb-4">
+        <img src="logo.jpeg" alt="Vento" class="w-10 h-10 rounded-full border-2 border-gray-700 dark:border-gray-300">
+        <div class="text-2xl md:text-3xl font-black tracking-wider">VENTO</div>
+      </div>
+      <p class="text-gray-400 dark:text-gray-500 text-sm leading-relaxed">Built for Performance. Designed for Confidence. Made for Athletes.</p>
+    </div>
+    <div>
+      <h3 class="font-black text-base mb-4 text-gray-300 dark:text-gray-600" x-text="t('footer_links')"></h3>
+      <div class="flex flex-col gap-3 text-gray-400 dark:text-gray-500 text-sm">
+        <a href="#products" class="hover:text-white dark:hover:text-black transition" x-text="t('nav_products')"></a>
+        <a href="cart.html" class="hover:text-white dark:hover:text-black transition" x-text="t('nav_cart')"></a>
+        <a href="#about" class="hover:text-white dark:hover:text-black transition" x-text="t('nav_about')"></a>
+      </div>
+    </div>
+    <div>
+      <h3 class="font-black text-base mb-4 text-gray-300 dark:text-gray-600" x-text="t('footer_contact')"></h3>
+      <!-- Social Icons - SIDE BY SIDE -->
+      <div class="flex items-center gap-3">
+        <a href="https://www.tiktok.com/@ventoo.eg" target="_blank" class="w-10 h-10 bg-gray-800 dark:bg-gray-200 rounded-full flex items-center justify-center text-white dark:text-black hover:bg-gray-700 dark:hover:bg-gray-300 transition hover:-translate-y-1 transform">
+          <i class="fab fa-tiktok text-lg"></i>
+        </a>
+        <a href="https://wa.me/201007720554" target="_blank" class="w-10 h-10 bg-green-600 rounded-full flex items-center justify-center text-white hover:bg-green-500 transition hover:-translate-y-1 transform">
+          <i class="fab fa-whatsapp text-lg"></i>
+        </a>
+        <a href="https://instagram.com/ventooo.eg" target="_blank" class="w-10 h-10 bg-gradient-to-tr from-purple-600 to-pink-500 rounded-full flex items-center justify-center text-white hover:opacity-90 transition hover:-translate-y-1 transform">
+          <i class="fab fa-instagram text-lg"></i>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="border-t border-gray-800 dark:border-gray-200 pt-5 text-center text-gray-500 dark:text-gray-400 text-xs md:text-sm">
+    © 2026 Vento. <span x-text="t('footer_rights')"></span>
+  </div>
+</footer>
+
+<!-- BOTTOM NAV (Mobile) -->
+<div class="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-950 border-t border-gray-100 dark:border-gray-800 md:hidden z-50 shadow-lg">
+  <div class="flex items-center justify-around py-2">
+    <a href="index.html" class="flex flex-col items-center gap-0.5 text-black dark:text-white">
+      <i class="fas fa-home text-lg"></i>
+      <span class="text-[10px] font-bold" x-text="t('nav_home')"></span>
+    </a>
+    <a href="#products" class="flex flex-col items-center gap-0.5 text-gray-400 dark:text-gray-500">
+      <i class="fas fa-box text-lg"></i>
+      <span class="text-[10px] font-bold" x-text="t('nav_products')"></span>
+    </a>
+    <a href="cart.html" class="flex flex-col items-center gap-0.5 text-gray-400 dark:text-gray-500 relative">
+      <i class="fas fa-shopping-bag text-lg"></i>
+      <span class="text-[10px] font-bold" x-text="t('nav_cart')"></span>
+      <span x-show="cartCount>0" x-text="cartCount"
+        class="absolute -top-1 right-2 bg-black dark:bg-white text-white dark:text-black text-[9px] w-3.5 h-3.5 rounded-full flex items-center justify-center font-bold leading-none"></span>
+    </a>
+  </div>
+</div>
+<div class="h-16 md:hidden"></div>
+
+<script src="products.js"></script>
+<script>
+// ── Translations ──
+const translations = {
+  ar: {
+    topbar_shipping: 'شحن لجميع المحافظات',
+    topbar_quality: 'خامات بجودة عالمية',
+    topbar_guarantee: 'جودة مضمونة 100%',
+    topbar_support: 'دعم العملاء 24/7 عبر الواتساب',
+    nav_home: 'الرئيسية',
+    nav_products: 'المنتجات',
+    nav_about: 'من نحن',
+    nav_cart: 'السلة',
+    hero_badge: 'تشكيلة جديدة متاحة الآن',
+    hero_desc: 'أقوى تشكيلة للملابس الرياضية. خامات ممتازة لتمرين أفضل.',
+    hero_cta: 'تسوق الآن',
+    feat_shipping: 'شحن سريع',
+    feat_shipping_sub: 'لجميع المحافظات',
+    feat_cod: 'الدفع عند الاستلام',
+    feat_cod_sub: 'ادفع بعد المعاينة',
+    feat_quality: 'خامات ممتازة',
+    feat_quality_sub: 'جودة عالية مضمونة',
+    feat_return: 'استبدال مرن',
+    feat_return_sub: 'خلال 14 يوم بسلاسة',
+    products_title: '— المنتجات —',
+    badge_new: 'جديد',
+    btn_view: 'عرض المنتج',
+    no_products: 'لا توجد منتجات حالياً في هذا القسم',
+    about_title: '— من نحن —',
+    about_text: 'في VENTO احنا بنؤمن أن الملابس الرياضية مش مجرد لبس وقت التمرين، هو جزء من رحلتك للتطور. عشان كدا عملنا VENTO اهتمينا بالراحة، والشكل، عشان نديك الثقه في كل تمرين. VENTO مش مجرد فكره دي بدايه جديده في عالم الرياضه.',
+    footer_links: 'روابط سريعة',
+    footer_contact: 'تواصل معنا',
+    footer_rights: 'جميع الحقوق محفوظة.',
+  },
+  en: {
+    topbar_shipping: 'Shipping to all governorates',
+    topbar_quality: 'World-class fabric quality',
+    topbar_guarantee: '100% Quality Guaranteed',
+    topbar_support: '24/7 Customer Support via WhatsApp',
+    nav_home: 'Home',
+    nav_products: 'Products',
+    nav_about: 'About',
+    nav_cart: 'Cart',
+    hero_badge: 'New Collection Available Now',
+    hero_desc: 'The ultimate sportswear collection. Premium fabric for better workouts.',
+    hero_cta: 'Shop Now',
+    feat_shipping: 'Fast Shipping',
+    feat_shipping_sub: 'All governorates',
+    feat_cod: 'Cash on Delivery',
+    feat_cod_sub: 'Pay after inspection',
+    feat_quality: 'Premium Quality',
+    feat_quality_sub: 'Guaranteed high quality',
+    feat_return: 'Easy Returns',
+    feat_return_sub: '14 days smooth exchange',
+    products_title: '— Products —',
+    badge_new: 'New',
+    btn_view: 'View Product',
+    no_products: 'No products in this category',
+    about_title: '— About Us —',
+    about_text: "At VENTO, we believe sportswear isn't just clothes for the gym — it's part of your journey to evolve. That's why we built VENTO with a focus on comfort and style, to give you confidence in every workout. VENTO isn't just an idea, it's a new beginning in the world of sports.",
+    footer_links: 'Quick Links',
+    footer_contact: 'Contact Us',
+    footer_rights: 'All rights reserved.',
+  }
+};
+
+function store() {
+  return {
+    products: window.mockProducts || [],
+    categories: window.mockCategories || [],
+    activeFilter: '',
+    mobileMenu: false,
+    cartCount: 0,
+    lang: 'ar',
+    isDark: false,
+
+init() {
+  this.cartCount = this.getCart().length;
+
+  // Load saved lang
+  const savedLang = localStorage.getItem('vento_lang');
+  if (savedLang) this.lang = savedLang;
+  this.applyLang();
+
+  // Load saved theme
+  const savedTheme = localStorage.getItem('vento_theme');
+  if (savedTheme === 'dark') {
+    this.isDark = true;
+    document.documentElement.classList.add('dark');
+  } else {
+    this.isDark = false;
+    document.documentElement.classList.remove('dark');
+  }
+
+  // products.js loads data asynchronously — pull it in once ready
+  if (window.productsReady) {
+    this.products = window.mockProducts || [];
+  }
+  if (window.categoriesReady) {
+    this.categories = window.mockCategories || [];
+  }
+  window.addEventListener('productsLoaded', (e) => {
+    this.products = e.detail || [];
+  });
+  window.addEventListener('categoriesLoaded', (e) => {
+    this.categories = e.detail || [];
+  });
+
+  // Auto-refresh products and categories every 5 seconds
+  setInterval(() => {
+    if (typeof loadProducts === 'function') loadProducts();
+    if (typeof loadCategories === 'function') loadCategories();
+  }, 5000);
+},
+
+    t(key) {
+      return translations[this.lang]?.[key] || translations['ar'][key] || key;
+    },
+
+    toggleLang() {
+      this.lang = this.lang === 'ar' ? 'en' : 'ar';
+      localStorage.setItem('vento_lang', this.lang);
+      this.applyLang();
+    },
+
+    applyLang() {
+      if (this.lang === 'en') {
+        document.documentElement.setAttribute('lang', 'en');
+        document.documentElement.setAttribute('dir', 'ltr');
+      } else {
+        document.documentElement.setAttribute('lang', 'ar');
+        document.documentElement.setAttribute('dir', 'rtl');
+      }
+    },
+
+    toggleTheme() {
+      this.isDark = !this.isDark;
+      if (this.isDark) {
+        document.documentElement.classList.add('dark');
+        localStorage.setItem('vento_theme', 'dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+        localStorage.setItem('vento_theme', 'light');
+      }
+    },
+
+    get filteredProducts() {
+      if (!this.activeFilter) return this.products;
+      return this.products.filter(p => p.type === this.activeFilter);
+    },
+
+    calcPrice(p) {
+      if (!p.discount_type || p.discount_type === 'none' || !p.discount_value) return p.price;
+      if (p.discount_type === 'amount')  return Math.max(p.price - p.discount_value, 0);
+      if (p.discount_type === 'percent') return Math.max(Math.round(p.price - (p.price * p.discount_value / 100)), 0);
+      return p.price;
+    },
+
+    hasDiscount(p) {
+      return p.discount_type && p.discount_type !== 'none' && p.discount_value > 0;
+    },
+
+    discountBadge(p) {
+      if (!this.hasDiscount(p)) return '';
+      if (p.discount_type === 'percent') return `-${p.discount_value}%`;
+      if (p.discount_type === 'amount')  return `-${p.discount_value} EGP`;
+      return '';
+    },
+
+    isNew(p) {
+      if (!p.created_at) return false;
+      return (Date.now() - new Date(p.created_at)) < 7*24*60*60*1000;
+    },
+
+    goToProduct(p) {
+      localStorage.setItem('vento_product', JSON.stringify(p));
+      window.location.href = 'product.html';
+    },
+
+    getCart() {
+      try { return JSON.parse(localStorage.getItem('vento_cart') || '[]'); } catch { return []; }
+    }
+  }
+}
+</script>
+</body>
+</html>
