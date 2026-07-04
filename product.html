@@ -111,13 +111,22 @@
 
       <!-- Color -->
       <div class="mb-6" x-show="colors.length > 0">
-        <p class="font-black mb-3 text-gray-900 dark:text-gray-100">اللون:</p>
-        <div class="flex gap-2 flex-wrap">
+        <p class="font-black mb-3 text-gray-900 dark:text-gray-100">
+          اللون: <span class="text-cyan-500 dark:text-cyan-400 font-bold" x-text="selectedColor"></span>
+        </p>
+        <div class="flex gap-3 flex-wrap">
           <template x-for="c in colors">
             <button @click="selectedColor=c; colorError=false"
-              :class="selectedColor===c ? 'border-cyan-400 dark:border-cyan-300 ring-2 ring-cyan-400' : 'border-gray-300 dark:border-gray-700'"
-              class="px-4 py-2 rounded-xl border-2 font-bold transition text-sm text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-900" 
-              x-text="c"></button>
+              :style="getColorStyle(c)"
+              :title="c"
+              :class="selectedColor===c ? 'ring-4 ring-cyan-400 dark:ring-cyan-300 border-white scale-110 shadow-md' : 'border-gray-300 dark:border-gray-700 hover:scale-105'"
+              class="w-10 h-10 rounded-full border-2 transition-all duration-200 flex items-center justify-center relative shadow-sm"
+            >
+              <!-- Icon inside circle indicating selection -->
+              <template x-if="selectedColor===c">
+                <i class="fas fa-check drop-shadow-md text-sm" :class="['white','ابيض','أبيض','#fff','#ffffff'].includes(c.toLowerCase().trim()) ? 'text-black' : 'text-white'"></i>
+              </template>
+            </button>
           </template>
         </div>
         <p x-show="colorError" class="text-red-500 text-sm mt-2 font-bold">⚠️ يجب اختيار اللون أولاً</p>
@@ -215,6 +224,54 @@ function productPage() {
       this.activeImage = imgs[0] || 'logo.jpeg';
 
       this.cartCount = this.getCart().length;
+    },
+
+    getColorStyle(c) {
+      if (!c) return '';
+      const trimC = c.trim();
+      if (trimC.startsWith('#') || trimC.startsWith('rgb') || trimC.startsWith('hsl')) {
+        return `background-color: ${trimC};`;
+      }
+      // Arab/English translation map
+      const colorsMap = {
+        'أحمر': 'red',
+        'احمر': 'red',
+        'red': 'red',
+        'أزرق': 'blue',
+        'ازرق': 'blue',
+        'blue': 'blue',
+        'أخضر': 'green',
+        'اخضر': 'green',
+        'green': 'green',
+        'أصفر': 'yellow',
+        'اصفر': 'yellow',
+        'yellow': 'yellow',
+        'أسود': 'black',
+        'اسود': 'black',
+        'black': 'black',
+        'أبيض': 'white',
+        'ابيض': 'white',
+        'white': 'white',
+        'رمادي': 'gray',
+        'رصاصي': 'gray',
+        'gray': 'gray',
+        'grey': 'gray',
+        'بني': 'brown',
+        'brown': 'brown',
+        'برتقالي': 'orange',
+        'orange': 'orange',
+        'وردي': 'pink',
+        'pink': 'pink',
+        'بنفسجي': 'purple',
+        'purple': 'purple',
+        'كحلي': '#000080',
+        'navy': '#000080',
+        'بيج': '#f5f5dc',
+        'beige': '#f5f5dc'
+      };
+      const normalized = trimC.toLowerCase();
+      const colorValue = colorsMap[normalized] || normalized;
+      return `background-color: ${colorValue};`;
     },
 
     calcPrice() {

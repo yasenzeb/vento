@@ -315,21 +315,25 @@ function checkoutPage() {
               order_number: orderNumber
           };
 
-          const response = await fetch('/api/send_invoice', {
-              method: 'POST',
-              headers: {
-                  'Content-Type': 'application/json'
-              },
-              body: JSON.stringify(invoicePayload)
-          });
+          try {
+              const response = await fetch('/api/send_invoice', {
+                  method: 'POST',
+                  headers: {
+                      'Content-Type': 'application/json'
+                  },
+                  body: JSON.stringify(invoicePayload)
+              });
 
-          if (!response.ok) {
-              throw new Error("Email service error (" + response.status + ")");
-          }
-
-          const data = await response.json();
-          if (data.success !== true) {
-              throw new Error(data.error || "Failed to send invoice email.");
+              if (!response.ok) {
+                  console.warn("Email service error (" + response.status + ")");
+              } else {
+                  const data = await response.json();
+                  if (data.success !== true) {
+                      console.warn(data.error || "Failed to send invoice email.");
+                  }
+              }
+          } catch (emailErr) {
+              console.error("Invoice email failed to send:", emailErr);
           }
 
           // 3. Clear cart and show success modal
