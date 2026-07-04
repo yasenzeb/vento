@@ -90,6 +90,6 @@ export default async function handler(req, res) {
 
   } catch (err) {
     console.error('[API /upload] Error:', err.message || err);
-    return res.status(500).json({ success: false, error: safeError(err) });
+    return res.status(500).json({ success: false, error: err.message || 'حدث خطأ داخلي.' });
   }
 }
