@@ -67,6 +67,7 @@
               <h3 class="font-bold text-sm md:text-base leading-tight mb-1 pr-6" x-text="item.name"></h3>
               <div class="text-xs text-gray-500 dark:text-gray-400 mb-2 flex gap-3">
                 <span x-show="item.size" x-text="'المقاس: '+item.size"></span>
+                <span x-show="item.color" x-text="'اللون: '+item.color"></span>
               </div>
               <div class="flex items-center justify-between">
                 <div class="text-black dark:text-white font-black text-sm md:text-base" x-text="(item.finalPrice*item.qty) + ' EGP'"></div>

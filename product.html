@@ -109,6 +109,20 @@
         <p x-show="sizeError" class="text-red-500 text-sm mt-2 font-bold">⚠️ يجب اختيار المقاس أولاً</p>
       </div>
 
+      <!-- Color -->
+      <div class="mb-6" x-show="colors.length > 0">
+        <p class="font-black mb-3 text-gray-900 dark:text-gray-100">اللون:</p>
+        <div class="flex gap-2 flex-wrap">
+          <template x-for="c in colors">
+            <button @click="selectedColor=c; colorError=false"
+              :class="selectedColor===c ? 'border-cyan-400 dark:border-cyan-300 ring-2 ring-cyan-400' : 'border-gray-300 dark:border-gray-700'"
+              class="px-4 py-2 rounded-xl border-2 font-bold transition text-sm text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-900" 
+              x-text="c"></button>
+          </template>
+        </div>
+        <p x-show="colorError" class="text-red-500 text-sm mt-2 font-bold">⚠️ يجب اختيار اللون أولاً</p>
+      </div>
+
       <!-- Qty -->
       <div class="mb-6">
         <p class="font-black mb-3 text-gray-900 dark:text-gray-100">الكمية:</p>
@@ -169,10 +183,13 @@ function productPage() {
     product: {},
     qty: 1,
     selectedSize: '',
+    selectedColor: '',
     sizeError: false,
+    colorError: false,
     toast: false,
     cartCount: 0,
     sizes: [],
+    colors: [],
     activeImage: '',
     allImages: [],
 
@@ -181,6 +198,9 @@ function productPage() {
 
       if (Array.isArray(this.product.sizes) && this.product.sizes.length) {
         this.sizes = this.product.sizes;
+      }
+      if (Array.isArray(this.product.colors) && this.product.colors.length) {
+        this.colors = this.product.colors;
       }
 
       const gallery = Array.isArray(this.product.gallery) ? this.product.gallery.filter(Boolean) : [];
@@ -210,12 +230,20 @@ function productPage() {
 
     addToCart() {
       this.sizeError = this.sizes.length > 0 && !this.selectedSize;
-      if (this.sizeError) return false;
+      this.colorError = this.colors.length > 0 && !this.selectedColor;
+      if (this.sizeError || this.colorError) return false;
 
       const cart = this.getCart();
-      const key = this.product.id+'_'+this.selectedSize;
+      const key = this.product.id+'_'+this.selectedSize+'_'+this.selectedColor;
       const idx = cart.findIndex(i=>i._key===key);
-      const item = {...this.product, qty:this.qty, size:this.selectedSize, _key:key, finalPrice:this.calcPrice()};
+      const item = {
+        ...this.product,
+        qty: this.qty,
+        size: this.selectedSize,
+        color: this.selectedColor,
+        _key: key,
+        finalPrice: this.calcPrice()
+      };
       
       if(idx>-1) cart[idx].qty += this.qty;
       else cart.push(item);

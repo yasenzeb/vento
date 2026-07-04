@@ -43,8 +43,7 @@ export default async function handler(req, res) {
         sizes:            Array.isArray(p.sizes) && p.sizes.length ? p.sizes : ['S','M','L','XL','XXL'],
         colors:           Array.isArray(p.colors) ? p.colors : [],
         gallery:          Array.isArray(p.gallery) ? p.gallery : [],
-        main_image_index: p.main_image_index || 0,
-        hover_image_index: p.hover_image_index || 1
+        main_image_index: p.main_image_index || 0
       }));
 
       return res.status(200).json({ success: true, products });
@@ -100,8 +99,7 @@ export default async function handler(req, res) {
           sizes: Array.isArray(sizes) && sizes.length ? sizes : ['S','M','L','XL','XXL'],
           colors: Array.isArray(colors) ? colors : [],
           gallery: Array.isArray(gallery) ? gallery : [],
-          main_image_index: parseInt(main_image_index) || 0,
-          hover_image_index: parseInt(hover_image_index) || 1
+          main_image_index: parseInt(main_image_index) || 0
         }])
         .select()
         .single();
@@ -120,7 +118,7 @@ export default async function handler(req, res) {
         return res.status(400).json({ success: false, error: 'Product ID is required.' });
       }
 
-      const { name, type, price, cost_price, image_url, discount_type, discount_value, sizes, colors, gallery, main_image_index, hover_image_index } = req.body || {};
+      const { name, type, price, cost_price, image_url, discount_type, discount_value, sizes, colors, gallery, main_image_index } = req.body || {};
       const updates = {};
 
       if (name !== undefined) updates.name = name;
@@ -138,7 +136,6 @@ export default async function handler(req, res) {
       if (colors !== undefined) updates.colors = Array.isArray(colors) ? colors : [];
       if (gallery !== undefined) updates.gallery = Array.isArray(gallery) ? gallery : [];
       if (main_image_index !== undefined) updates.main_image_index = parseInt(main_image_index) || 0;
-      if (hover_image_index !== undefined) updates.hover_image_index = parseInt(hover_image_index) || 1;
 
       if (updates.discount_type === 'none') {
         updates.discount_value = 0;
