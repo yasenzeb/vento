@@ -1,6 +1,6 @@
-// api/send_invoice.js — إرسال الفاتورة بالبريد الإلكتروني باستخدام Gmail SMTP
-import { setCorsHeaders, isRateLimited, safeError } from './_auth.js';
-import nodemailer from 'nodemailer';
+// api/send_invoice.js — إرسال الفاتورة بالبريد الإلكتروني باستخدام خدمة Resend
+import { setCorsHeaders, isRateLimited } from './_auth.js';
+import { Resend } from 'resend';
 import fs from 'fs';
 import path from 'path';
 
@@ -24,6 +24,16 @@ export default async function handler(req, res) {
     if (!email || !customer_name) {
       return res.status(400).json({ success: false, error: 'email و customer_name مطلوبان' });
     }
+
+    const apiKey = process.env.RESEND_API_KEY;
+    if (!apiKey) {
+      return res.status(500).json({
+        success: false,
+        error: 'مفتاح Resend API غير مضبوط. يرجى إضافة RESEND_API_KEY في Vercel.'
+      });
+    }
+
+    const resend = new Resend(apiKey);
 
     // 1. Reconstruct items from arrays
     const products = body.products || [];
@@ -101,32 +111,23 @@ export default async function handler(req, res) {
       .replace(/\{\{\s*shipping_cost\s*\}\}/g, shipping_cost || 0)
       .replace(/\{\{\s*total\s*\}\}/g, total || 0);
 
-    // 3. Configure Gmail SMTP transporter
-    const gmailUser = process.env.GMAIL_USER || 'oovento26@gmail.com';
-    const gmailPass = process.env.GMAIL_PASS || 'ventooooo@10103244';
+    const fromEmail = process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev';
 
-    const transporter = nodemailer.createTransport({
-      host: 'smtp.gmail.com',
-      port: 465,
-      secure: true,
-      auth: {
-        user: gmailUser,
-        pass: gmailPass
-      }
-    });
-
-    // 4. Send email
-    const mailOptions = {
-      from: `"Vento Store" <${gmailUser}>`,
+    // 3. Send email via Resend
+    const { data: resData, error: resError } = await resend.emails.send({
+      from: `Vento Store <${fromEmail}>`,
       to: email,
       subject: `VENTO - فاتورة وتأكيد الطلب #${order_number || ''}`,
       html: htmlContent
-    };
+    });
 
-    await transporter.sendMail(mailOptions);
-    console.log(`[send_invoice] Email sent successfully to ${email} for order ${order_number}`);
+    if (resError) {
+      console.error('[Resend Error]', resError);
+      throw new Error(resError.message || 'فشل إرسال البريد الإلكتروني عبر Resend');
+    }
 
-    return res.status(200).json({ success: true });
+    console.log(`[send_invoice] Email sent successfully to ${email} for order ${order_number}`, resData);
+    return res.status(200).json({ success: true, id: resData.id });
 
   } catch (err) {
     console.error('[API /send_invoice]', err);
