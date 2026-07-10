@@ -3,9 +3,49 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
-<title>Vento - Built for Performance</title>
-<meta name="description" content="متجر Vento - ملابس رياضية بأعلى جودة وتصميم يمنحك الثقة.">
-<link rel="icon" href="logo.jpeg" type="image/jpeg">
+<title>VENTO | أقوى تيشرتات رياضية وتيشرتات جيم عصرية للرجال</title>
+<meta name="description" content="تسوق تشكيلة حصرية من أفضل التيشرتات الرياضية وتيشرتات الجيم للرجال من متجر VENTO. خامات عالية الجودة، تصاميم مريحة للياقة البدنية، وشحن سريع لجميع المحافظات.">
+<meta name="keywords" content="تيشرتات جيم, تيشرتات رياضية في مصر, تيشرت جيم كاترون, تيشرتات تمرين مريحة, ملابس جيم علوية, تيشرتات كمال أجسام, VENTO, ملابس رياضية للرجال">
+
+<!-- Favicon & Touch Icons -->
+<link rel="icon" type="image/png" href="favicon-96x96.png" sizes="96x96" />
+<link rel="icon" type="image/svg+xml" href="favicon.svg" />
+<link rel="shortcut icon" href="favicon.ico" />
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" />
+<link rel="manifest" href="site.webmanifest" />
+
+<!-- Open Graph / Facebook -->
+<meta property="og:type" content="website" />
+<meta property="og:title" content="VENTO | أقوى تيشرتات رياضية وتيشرتات جيم عصرية" />
+<meta property="og:description" content="تسوق تشكيلة حصرية من أفضل التيشرتات الرياضية وتيشرتات الجيم من متجر VENTO. خامات عالية الجودة، تصاميم مريحة للياقة البدنية، وشحن سريع لجميع المحافظات." />
+<meta property="og:url" content="https://vento-wear.vercel.app" />
+<meta property="og:image" content="https://vento-wear.vercel.app/logo.jpeg" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+
+<!-- Twitter -->
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="VENTO | أقوى تيشرتات رياضية وتيشرتات جيم عصرية" />
+<meta name="twitter:description" content="تسوق تشكيلة حصرية من أفضل التيشرتات الرياضية وتيشرتات الجيم من متجر VENTO. خامات عالية الجودة، تصاميم مريحة للياقة البدنية، وشحن سريع لجميع المحافظات." />
+<meta name="twitter:image" content="https://vento-wear.vercel.app/logo.jpeg" />
+
+<!-- JSON-LD Structured Data Schema -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Store",
+  "name": "VENTO",
+  "url": "https://vento-wear.vercel.app",
+  "logo": "https://vento-wear.vercel.app/logo.jpeg",
+  "description": "تسوق تشكيلة حصرية من أفضل التيشرتات الرياضية وتيشرتات الجيم من متجر VENTO. خامات عالية الجودة، تصاميم مريحة للياقة البدنية، وشحن سريع لجميع المحافظات.",
+  "image": "https://vento-wear.vercel.app/logo.jpeg",
+  "priceRange": "EGP",
+  "address": {
+    "@type": "PostalAddress",
+    "addressCountry": "EG"
+  }
+}
+</script>
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet"/>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet"/>
 <script src="https://cdn.tailwindcss.com"></script>
@@ -363,7 +403,7 @@ const translations = {
     nav_about: 'من نحن',
     nav_cart: 'السلة',
     hero_badge: 'تشكيلة جديدة متاحة الآن',
-    hero_desc: 'أقوى تشكيلة للملابس الرياضية. خامات ممتازة لتمرين أفضل.',
+    hero_desc: 'أقوى تشكيلة ملابس جيم وتيشرتات رياضية للرجال. خامات تمرين ممتازة للياقة البدنية.',
     hero_cta: 'تسوق الآن',
     feat_shipping: 'شحن سريع',
     feat_shipping_sub: 'لجميع المحافظات',
@@ -378,7 +418,7 @@ const translations = {
     btn_view: 'عرض المنتج',
     no_products: 'لا توجد منتجات حالياً في هذا القسم',
     about_title: '— من نحن —',
-    about_text: 'في VENTO احنا بنؤمن أن الملابس الرياضية مش مجرد لبس وقت التمرين، هو جزء من رحلتك للتطور. عشان كدا عملنا VENTO اهتمينا بالراحة، والشكل، عشان نديك الثقه في كل تمرين. VENTO مش مجرد فكره دي بدايه جديده في عالم الرياضه.',
+    about_text: 'في VENTO احنا بنؤمن أن الملابس الرياضية للرجال وتيشرتات الجيم وتمرين مريحة مش مجرد لبس وقت التمرين، هي جزء من رحلتك للتطور الرياضي. عشان كدا عملنا VENTO واهتمينا بتقديم تيشرت جيم كاترون وتيشرتات كمال أجسام وملابس جيم علوية متميزة تعطي الثقة والراحة القصوى في كل تمرين.',
     footer_links: 'روابط سريعة',
     footer_contact: 'تواصل معنا',
     footer_rights: 'جميع الحقوق محفوظة.',
@@ -534,5 +574,26 @@ init() {
   }
 }
 </script>
+
+<!-- SEO LSI Keywords Indexing Map -->
+<div style="display: none;" aria-hidden="true">
+  <h2>تيشرتات جيم وتمرين للرجال والرياضيين في مصر</h2>
+  <p>تسوق أفضل ملابس رياضية علوية وتيشرتات كمال أجسام وتيشرت جيم كاترون عالي الجودة من VENTO.</p>
+  <ul>
+    <li>تيشرتات جيم</li>
+    <li>تيشرتات رياضية في مصر</li>
+    <li>تيشرت جيم كاترون</li>
+    <li>تيشرتات تمرين مريحة</li>
+    <li>ملابس جيم علوية</li>
+    <li>تيشرتات كمال أجسام</li>
+    <li>vento ملابس رياضيه</li>
+    <li>vento sports wear</li>
+    <li>vento sportswear</li>
+    <li>تيشرتات سبور رجالي</li>
+    <li>لبس سبور رجالي</li>
+    <li>طقم رجالي سبور</li>
+    <li>ملابس التنس للرجال</li>
+  </ul>
+</div>
 </body>
 </html>
