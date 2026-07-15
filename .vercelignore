@@ -1,0 +1,16 @@
+# Ignore original API files from Vercel detection/upload
+api/admin-auth.js
+api/categories.js
+api/categories/[id].js
+api/checkout.js
+api/notify.js
+api/order-receipt.js
+api/order.js
+api/orders.js
+api/products.js
+api/products/[id].js
+api/reviews.js
+api/send_invoice.js
+api/upload-receipt.js
+api/upload.js
+api/whatsapp-webhook.js

@@ -1,5 +1,4 @@
 {
-  "outputDirectory": ".",
   "rewrites": [
     { "source": "/api/send_invoice", "destination": "/api/router.js?__path=send_invoice" },
     { "source": "/api/(.*)", "destination": "/api/router.js?__path=$1" }
