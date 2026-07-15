@@ -1,7 +1,7 @@
 {
   "rewrites": [
-    { "source": "/api/send_invoice", "destination": "/api/send_invoice" },
-    { "source": "/api/(.*)", "destination": "/api/$1" }
+    { "source": "/api/send_invoice", "destination": "/api/router.js?__path=send_invoice" },
+    { "source": "/api/(.*)", "destination": "/api/router.js?__path=$1" }
   ],
   "headers": [
     {
